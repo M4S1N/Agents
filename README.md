@@ -1,7 +1,7 @@
 # Agentes #
 
 
-Se presenta el problema de simular el comportamiento de un robot de limpieza en un ambiente en forma de tablero de $n \times m$. Los elementos del ambiente son:</br>
+Se presenta el problema de simular el comportamiento de un robot de limpieza en un ambiente en forma de tablero de n x m. Los elementos del ambiente son:</br>
 
 * Corral: En este solo puede haber un niño y/o un robot. Si hay un niño este queda inmovilizado
 * Niños: Se pueden mover por el medio una celda a la vez, son los responsables de generar suciedad y son capaces de mover obstáculos.
@@ -9,7 +9,7 @@ Se presenta el problema de simular el comportamiento de un robot de limpieza en 
 * Suciedad: Es generada por los niños y puede ser limpiada por el robot.
 * Robot: Se encarga de llevar los niños hacia el corral y limpiar las celdas sucias.
 
-La tarea fundamental del robot es mantener el $60\%$ de las casillas libres, limpias.
+La tarea fundamental del robot es mantener el 60% de las casillas libres, limpias.
 
 </br>
 
