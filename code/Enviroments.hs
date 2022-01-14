@@ -220,10 +220,6 @@ run_simlutation env time gen agent_model =
             if new_time `mod` (t env) == 0 then
                 randomize_enviroment natural_change gen1 agent_model
             else (natural_change, gen1)
-        n = length (board env)
-        m = length ((board env) !! 0)
-        clean_cells = length [True | i <- [1..n], j<- [1..m], elem (((board natural_change) !! (i-1)) !! (j-1)) ["","R"]]
-        dirt_cells = length [True | i <- [1..n], j<- [1..m], elem 'S' (((board natural_change) !! (i-1)) !! (j-1))]
     in do
         putStr "---------------------------------------------------- "
         putStr "proximo turno"
@@ -232,8 +228,6 @@ run_simlutation env time gen agent_model =
         print_enviroment agent_env
         putStrLn " "
         print_enviroment natural_change
-        print clean_cells
-        print dirt_cells
         if new_time `mod` (t env) == 0 then do
             putStrLn " "
             putStrLn "==> El Ambiente cambia de forma aleatoria!!! <=="
