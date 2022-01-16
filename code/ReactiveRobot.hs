@@ -141,14 +141,15 @@ action grid robot _show =
 
                 -- Que exista un camino hacia "N" y otro hacia "C" (tras haberlo cargado)
                 without_robot = set_matrix grid rx ry (remove_item ((grid !! rx) !! ry) 'R')
-                full_path = [pth1 ++ pth2 | (x1,y1)<-_child, (x2,y2)<-_corral,
+                valid_children = [(x1,y1) | (x1,y1)<-_child, (x2,y2)<-_corral,
                                             pth1 <-(paths grid (rx,ry) (x1,y1) False),
                                             pth2 <-(paths without_robot (x1,y1) (x2,y2) True),
                                             pth1 /=[] && pth2 /=[]]
-                cond_N = full_path /= []
+                cond_N = valid_children /= []
                 act_N =
                     let
-                        _short_paths_to_ch = select_short_path _paths_to_child [head _paths_to_child]
+                        _valid_paths_to_child = [pth | (x,y) <- valid_children, pth <- (paths grid (rx,ry) (x,y) False), pth /= []]
+                        _short_paths_to_ch = select_short_path _valid_paths_to_child [head _valid_paths_to_child]
                         best_path_to_ch = max_repeat _short_paths_to_ch grid 'S' [head _short_paths_to_ch]
                         (x,y) = (head best_path_to_ch) !! 1
                         (v,w) = last (head best_path_to_ch)

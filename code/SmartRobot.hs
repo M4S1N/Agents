@@ -23,7 +23,11 @@ run_irobot perception rnum =
                 ((x,y): rest) = _list_obj
                 _new_grid =
                     if x >= 0 && y >= 0 then
-                        set_matrix _grid x y "O"
+                        if elem 'S' ((_grid !! x) !! y) then
+                            set_matrix _grid x y (remove_item ((_grid !! x) !! y) 'S')
+                        else if elem 'N' ((_grid !! x) !! y) then
+                            set_matrix _grid x y (remove_item ((_grid !! x) !! y) 'N')
+                        else set_matrix _grid x y ""
                     else _grid
             in
                 if _list_obj /= [] then
