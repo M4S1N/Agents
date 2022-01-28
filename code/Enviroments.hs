@@ -91,48 +91,66 @@ move_children grid xs gen | xs == [] = (grid, gen) | otherwise =
         n = length grid
         m = length (grid !! 0)
         (new_grid0, gen0) = move_children grid rest gen
-        
-        -- suciedad generada por los niños
-        (will_dirt, gen1) = random gen0::(Bool, StdGen)
-        (new_grid1, gen2) = unsafePerformIO $
-            if will_dirt then
-                let 
-                    cells_clean = [(_i-1,_j-1) | _i<-[1..n], _j<-[1..m], ((new_grid0 !! (_i-1)) !! (_j-1)) == ""]
-                    (_i, gen1_0) = randomR (0, n-1) gen1::(Int, StdGen)
-                    (_j, gen1_1) = randomR (0, m-1) gen1_0::(Int, StdGen)
-                in
-                    if elem (_i,_j) cells_clean then do
-                        putStrLn ("--> Niño de " ++ (show (i+1,j+1)) ++ " ensucia " ++ (show (_i+1,_j+1)) ++ ". ")
-                        return (set_matrix new_grid0 _i _j "S", gen1_1)
-                    else return (new_grid0, gen1_1)
-            else return (new_grid0, gen1)
 
         -- movimiento de los niños
-        (will_move, gen3) = random gen2::(Bool, StdGen)
-        (new_grid2, gen4) =
+        (will_move, gen1) = random gen0::(Bool, StdGen)
+        (new_grid1, gen2) =
             if will_move then 
                 let
                     directions = adjacents i j n m
                     valid_direction = [(_i,_j) | (_i,_j) <- directions,
-                                    all (\bool -> bool == True) [not (elem obj ((new_grid1 !! _i) !! _j)) | obj <- ['N','S','R']]]
+                                    all (\bool -> bool == True) [not (elem obj ((new_grid0 !! _i) !! _j)) | obj <- ['N','S','R']]]
 
-                    (grid_ans, gen3_0) = unsafePerformIO $
+                    (grid_ans, gen1_0) = unsafePerformIO $
                         if valid_direction /= [] then 
                             let
-                                (d_indx, gen3_1) = randomR (0, (length valid_direction)-1) gen3::(Int, StdGen)
+                                (d_indx, gen1_1) = randomR (0, (length valid_direction)-1) gen1::(Int, StdGen)
                                 (x, y) = valid_direction !! d_indx
                             in 
-                                if elem 'O' ((new_grid1 !! x) !! y) then do
+                                if elem 'O' ((new_grid0 !! x) !! y) then do
                                     putStrLn ("--> Niño de " ++ (show (i+1,j+1)) ++ " empuja obstaculo de " ++ (show (x+1,y+1)) ++ ". ")
-                                    return (move_from_to new_grid1 i j x y, gen3_1)
+                                    return (move_from_to new_grid0 i j x y, gen1_1)
                                 else 
-                                    let v = ((new_grid1 !! x) !! y) ++ "N"
+                                    let v = ((new_grid0 !! x) !! y) ++ "N"
                                     in do
                                         putStrLn ("--> Niño de " ++ (show (i+1,j+1)) ++ " se mueve hacia " ++ (show (x+1,y+1)) ++ ". ")
-                                        return (set_matrix (set_matrix new_grid1 x y v) i j "", gen3_1)
-                        else return (new_grid1, gen3)
-                in (grid_ans, gen3_0)
-            else (new_grid1, gen3)
+                                        return (set_matrix (set_matrix new_grid0 x y v) i j "", gen1_1)
+                        else return (new_grid0, gen1)
+                in (grid_ans, gen1_0)
+            else (new_grid0, gen1)
+        
+        -- suciedad generada por los niños
+        (will_dirt, gen3) = random gen2::(Bool, StdGen)
+        (new_grid2, gen4) = unsafePerformIO $
+            if will_move && will_dirt && new_grid1 /= new_grid0 then
+                let 
+                    -- celdas que el niño puede ensuciar
+                    _grid = get_3_x_3_cells (i,j) n m
+                    cells_clean = [(_i, _j) | (_i,_j) <- _grid, ((new_grid1 !! _i) !! _j) == ""]
+
+                    _count_child = length [(x,y) | (x,y) <- _grid, ((new_grid1 !! x) !! y) == "N"]
+                    _child_in_rest = (length [(x,y) | (x,y) <- _grid, ((new_grid1 !! x) !! y) == "N" && elem (x,y) rest]) > 0
+
+                    _max_dirt = min (if _count_child > 2 || not _child_in_rest then 2 else 1) (length cells_clean)
+                    (_dirt_gen, gen2_0) = randomR (1,_max_dirt) gen3::(Int, StdGen)
+
+                    (indx1, gen2_1) = randomR (0, (length cells_clean)-1) gen2_0::(Int, StdGen)
+                    (x1, y1) = cells_clean !! indx1
+                    new_cells_clean = remove_item cells_clean (x1, y1)
+
+                    (indx2, gen2_2) = randomR (0, (length new_cells_clean)-1) gen2_1::(Int, StdGen)
+                    (x2, y2) = new_cells_clean !! indx2
+                in
+                    if True then do
+                        putStrLn ("--> Niño de " ++ (show (i+1,j+1)) ++ " ensucia " ++ (show (x1+1,y1+1)) ++ ". ")
+                        return (set_matrix new_grid1 x1 y1 "S", gen2_1)
+                    else if _dirt_gen == 2 then do
+                        putStrLn ("--> Niño de " ++ (show (i+1,j+1)) ++ " ensucia " ++ (show (x2+1,y2+1)) ++ ". ")
+                        putStrLn ("--> Niño de " ++ (show (i+1,j+1)) ++ " ensucia " ++ (show (x1+1,y1+1)) ++ ". ")
+                        return (set_matrix (set_matrix new_grid1 x1 y1 "S") x2 y2 "S", gen2_2)
+                    else return (new_grid1, gen3)
+            
+            else return (new_grid1, gen3)
     in (new_grid2, gen4)
 
 
@@ -278,10 +296,13 @@ init_enviroment n m t k_r agent_model seed =
 -----------------------------------------------------------------------------------------------------------------------------------------
 main::Int -> Int -> Int -> Int -> Bool -> IO()
 main n m t robot_cant intelligent =
-    let
-        seed = 0
-    in
-        if intelligent then
-            init_enviroment n m t robot_cant 1 seed
-        else init_enviroment n m t robot_cant 0 seed
+    if n < 3 || m < 3 then
+        print "cantidad de filas y columnas deben ser mayores que 2"
+    else
+        let
+            seed = 0
+        in
+            if intelligent then
+                init_enviroment n m t robot_cant 1 seed
+            else init_enviroment n m t robot_cant 0 seed
 -- ======================================================================================================================================

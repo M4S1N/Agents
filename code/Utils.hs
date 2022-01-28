@@ -84,3 +84,10 @@ select_short_path (_path:_paths_rest) best_paths =
         _best_paths = select_short_path _paths_rest new_best_paths
 
     in _best_paths
+
+get_3_x_3_cells::(Int, Int) -> Int -> Int -> [(Int, Int)]
+get_3_x_3_cells (i, j) n m =
+    let
+        (x,y) = head [(s1,s2) | s1 <- [0..(n-3)], s2 <- [0..(m-3)], s1 <= i && i <= s1+2 && s2 <= j && j <= s2+2]
+    in
+        [(u,v) | u <- [x..(x+2)], v <- [y..(y+2)]]
